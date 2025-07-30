@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "(v5.3 - Grouped by AZ) AWS CFT to deploy a segmented VPC across 2 AZs for 3 FortiGate clusters and shared management.",
+    "Description": "(v5.5 - Reordered Parameters) AWS CFT to deploy a segmented VPC across 2 AZs for 3 FortiGate clusters and shared management.",
     "Metadata": {
         "AWS::CloudFormation::Interface": {
             "ParameterGroups": [
@@ -11,19 +11,31 @@
                 {
                     "Label": { "default": "Subnet Configuration for AZ1" },
                     "Parameters": [ 
-                        "MgmtSubnetAZ1", 
-                        "WANDmzeSubnetAZ1", "LANDmzeSubnetAZ1", "HADmzeSubnetAZ1",
-                        "WANSdwanSubnetAZ1", "LANSdwanSubnetAZ1", "HASdwanSubnetAZ1",
-                        "WANDmziSubnetAZ1", "LANDmziSubnetAZ1", "HADmziSubnetAZ1"
+                        "MgmtSubnetAZ1",
+                        "WANSdwanSubnetAZ1",
+                        "LANSdwanSubnetAZ1",
+                        "HASdwanSubnetAZ1",
+                        "LANDmzeSubnetAZ1",
+                        "WANDmzeSubnetAZ1",
+                        "HADmzeSubnetAZ1",
+                        "LANDmziSubnetAZ1",
+                        "WANDmziSubnetAZ1",
+                        "HADmziSubnetAZ1"
                     ]
                 },
                 {
                     "Label": { "default": "Subnet Configuration for AZ2" },
                     "Parameters": [ 
                         "MgmtSubnetAZ2",
-                        "WANDmzeSubnetAZ2", "LANDmzeSubnetAZ2", "HADmzeSubnetAZ2",
-                        "WANSdwanSubnetAZ2", "LANSdwanSubnetAZ2", "HASdwanSubnetAZ2",
-                        "WANDmziSubnetAZ2", "LANDmziSubnetAZ2", "HADmziSubnetAZ2"
+                        "WANSdwanSubnetAZ2",
+                        "LANSdwanSubnetAZ2",
+                        "HASdwanSubnetAZ2",
+                        "LANDmzeSubnetAZ2",
+                        "WANDmzeSubnetAZ2",
+                        "HADmzeSubnetAZ2",
+                        "LANDmziSubnetAZ2",
+                        "WANDmziSubnetAZ2",
+                        "HADmziSubnetAZ2"
                      ]
                 }
             ]
@@ -34,24 +46,24 @@
         "AZ1": { "Type": "AWS::EC2::AvailabilityZone::Name", "Description": "Select the first Availability Zone." },
         "AZ2": { "Type": "AWS::EC2::AvailabilityZone::Name", "Description": "Select the second Availability Zone." },
         "MgmtSubnetAZ1": { "Type": "String", "Default": "10.4.0.64/28" },
-        "WANDmzeSubnetAZ1": { "Type": "String", "Default": "10.4.0.96/27" },
-        "LANDmzeSubnetAZ1": { "Type": "String", "Default": "10.4.0.80/28" },
-        "HADmzeSubnetAZ1": { "Type": "String", "Default": "10.4.0.128/28" },
         "WANSdwanSubnetAZ1": { "Type": "String", "Default": "10.4.0.0/27" },
         "LANSdwanSubnetAZ1": { "Type": "String", "Default": "10.4.0.32/28" },
         "HASdwanSubnetAZ1": { "Type": "String", "Default": "10.4.0.48/28" },
-        "WANDmziSubnetAZ1": { "Type": "String", "Default": "10.4.0.160/28" },
+        "LANDmzeSubnetAZ1": { "Type": "String", "Default": "10.4.0.80/28" },
+        "WANDmzeSubnetAZ1": { "Type": "String", "Default": "10.4.0.96/27" },
+        "HADmzeSubnetAZ1": { "Type": "String", "Default": "10.4.0.128/28" },
         "LANDmziSubnetAZ1": { "Type": "String", "Default": "10.4.0.144/28" },
+        "WANDmziSubnetAZ1": { "Type": "String", "Default": "10.4.0.160/28" },
         "HADmziSubnetAZ1": { "Type": "String", "Default": "10.4.0.176/28" },
         "MgmtSubnetAZ2": { "Type": "String", "Default": "10.4.1.0/28" },
-        "WANDmzeSubnetAZ2": { "Type": "String", "Default": "10.4.1.32/27" },
-        "LANDmzeSubnetAZ2": { "Type": "String", "Default": "10.4.1.16/28" },
-        "HADmzeSubnetAZ2": { "Type": "String", "Default": "10.4.1.64/28" },
         "WANSdwanSubnetAZ2": { "Type": "String", "Default": "10.4.0.192/27" },
         "LANSdwanSubnetAZ2": { "Type": "String", "Default": "10.4.0.224/28" },
         "HASdwanSubnetAZ2": { "Type": "String", "Default": "10.4.0.240/28" },
-        "WANDmziSubnetAZ2": { "Type": "String", "Default": "10.4.1.96/28" },
+        "LANDmzeSubnetAZ2": { "Type": "String", "Default": "10.4.1.16/28" },
+        "WANDmzeSubnetAZ2": { "Type": "String", "Default": "10.4.1.32/27" },
+        "HADmzeSubnetAZ2": { "Type": "String", "Default": "10.4.1.64/28" },
         "LANDmziSubnetAZ2": { "Type": "String", "Default": "10.4.1.80/28" },
+        "WANDmziSubnetAZ2": { "Type": "String", "Default": "10.4.1.96/28" },
         "HADmziSubnetAZ2": { "Type": "String", "Default": "10.4.1.112/28" }
     },
     "Resources": {
