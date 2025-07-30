@@ -1,706 +1,118 @@
 {
-	"AWSTemplateFormatVersion": "2010-09-09",
-	"Description": "(v2.1) AWS CFT to deploy a VPC with 4 subnets (Public, Private, HAsync, and HAmgmt) across 2x Availability Zones.",
-	"Metadata": {
-		"AWS::CloudFormation::Interface": {
-			"ParameterGroups": [
-				{
-					"Label": {
-						"default": "VPC Configuration"
-					},
-					"Parameters": [
-						"VPCCIDR",
-						"AZForSubnet1",
-						"AZForSubnet2",
-						"PublicSubnet1",
-						"PrivateSubnet1",
-						"HASyncSubnet1",
-						"HAMgmtSubnet1",
-						"PublicSubnet2",
-						"PrivateSubnet2",
-						"HASyncSubnet2",
-						"HAMgmtSubnet2",
-						"TgwAttachSubnets",
-						"TgwAttachSubnet1",
-						"TgwAttachSubnet2"
-					]
-				}
-			]
-		}
-	},
-	"Parameters": {
-		"VPCCIDR": {
-			"Type": "String",
-			"Default": "10.0.0.0/16",
-			"Description": "Provide a network CIDR for the VPC"
-		},
-		"AZForSubnet1": {
-			"Type": "AWS::EC2::AvailabilityZone::Name",
-			"Description": "Select an Availability Zone for the first set of subnets"
-		},
-		"AZForSubnet2": {
-			"Type": "AWS::EC2::AvailabilityZone::Name",
-			"Description": "Select an Availability Zone for the second set of subnets"
-		},
-		"PublicSubnet1": {
-			"Type": "String",
-			"Default": "10.0.1.0/24",
-			"Description": "Provide a network CIDR for PublicSubnet1"
-		},
-		"PrivateSubnet1": {
-			"Type": "String",
-			"Default": "10.0.2.0/24",
-			"Description": "Provide a network CIDR for PrivateSubnet1"
-		},
-		"HASyncSubnet1": {
-			"Type": "String",
-			"Default": "10.0.3.0/24",
-			"Description": "Provide a network CIDR for HASyncSubnet1"
-		},
-		"HAMgmtSubnet1": {
-			"Type": "String",
-			"Default": "10.0.4.0/24",
-			"Description": "Provide a network CIDR for HAMgmtSubnet1"
-		},
-		"PublicSubnet2": {
-			"Type": "String",
-			"Default": "10.0.10.0/24",
-			"Description": "Provide a network CIDR for PublicSubnet2"
-		},
-		"PrivateSubnet2": {
-			"Type": "String",
-			"Default": "10.0.20.0/24",
-			"Description": "Provide a network CIDR for PrivateSubnet2"
-		},
-		"HASyncSubnet2": {
-			"Type": "String",
-			"Default": "10.0.30.0/24",
-			"Description": "Provide a network CIDR for HASyncSubnet2"
-		},
-		"HAMgmtSubnet2": {
-			"Type": "String",
-			"Default": "10.0.40.0/24",
-			"Description": "Provide a network CIDR for HAMgmtSubnet2"
-		},
-		"TgwAttachSubnets": {
-			"Type": "String",
-			"Description": "Select Yes if you plan to attach this VPC to Transit GW with a VPC attachment.  If Yes is selected 2 additional subnets and a route table will be created",
-			"Default": "No",
-			"AllowedValues": [
-				"Yes",
-				"No"
-			]
-		},
-		"TgwAttachSubnet1": {
-			"Type": "String",
-			"Default": "10.0.5.0/24",
-			"Description": "Provide a network CIDR for TgwAttachSubnet1"
-		},
-		"TgwAttachSubnet2": {
-			"Type": "String",
-			"Default": "10.0.50.0/24",
-			"Description": "Provide a network CIDR for TgwAttachSubnet2"
-		}
-	},
-	"Conditions": {
-		"CreateTgwAttachSubnets": {
-			"Fn::Equals": [
-				{
-					"Ref": "TgwAttachSubnets"
-				},
-				"Yes"
-			]
-		}
-	},
-	"Resources": {
-		"VPCID": {
-			"Type": "AWS::EC2::VPC",
-			"Properties": {
-				"CidrBlock": {
-					"Ref": "VPCCIDR"
-				},
-				"EnableDnsSupport": "true",
-				"EnableDnsHostnames": "true",
-				"Tags": [
-					{
-						"Key": "Name",
-						"Value": {
-							"Fn::Join": [
-								"-",
-								[
-									{
-										"Ref": "AWS::StackName"
-									},
-									"VPC"
-								]
-							]
-						}
-					}
-				]
-			}
-		},
-		"PublicSub1": {
-			"Type": "AWS::EC2::Subnet",
-			"Properties": {
-				"VpcId": {
-					"Ref": "VPCID"
-				},
-				"CidrBlock": {
-					"Ref": "PublicSubnet1"
-				},
-				"AvailabilityZone": {
-					"Ref": "AZForSubnet1"
-				},
-				"Tags": [
-					{
-						"Key": "Name",
-						"Value": {
-							"Fn::Join": [
-								"-",
-								[
-									{
-										"Ref": "AWS::StackName"
-									},
-									"PublicSubnet1"
-								]
-							]
-						}
-					}
-				]
-			}
-		},
-		"PrivateSub1": {
-			"Type": "AWS::EC2::Subnet",
-			"Properties": {
-				"VpcId": {
-					"Ref": "VPCID"
-				},
-				"CidrBlock": {
-					"Ref": "PrivateSubnet1"
-				},
-				"AvailabilityZone": {
-					"Ref": "AZForSubnet1"
-				},
-				"Tags": [
-					{
-						"Key": "Name",
-						"Value": {
-							"Fn::Join": [
-								"-",
-								[
-									{
-										"Ref": "AWS::StackName"
-									},
-									"PrivateSubnet1"
-								]
-							]
-						}
-					}
-				]
-			}
-		},
-		"HASyncSub1": {
-			"Type": "AWS::EC2::Subnet",
-			"Properties": {
-				"VpcId": {
-					"Ref": "VPCID"
-				},
-				"CidrBlock": {
-					"Ref": "HASyncSubnet1"
-				},
-				"AvailabilityZone": {
-					"Ref": "AZForSubnet1"
-				},
-				"Tags": [
-					{
-						"Key": "Name",
-						"Value": {
-							"Fn::Join": [
-								"-",
-								[
-									{
-										"Ref": "AWS::StackName"
-									},
-									"HASyncSubnet1"
-								]
-							]
-						}
-					}
-				]
-			}
-		},
-		"HAMgmtSub1": {
-			"Type": "AWS::EC2::Subnet",
-			"Properties": {
-				"VpcId": {
-					"Ref": "VPCID"
-				},
-				"CidrBlock": {
-					"Ref": "HAMgmtSubnet1"
-				},
-				"AvailabilityZone": {
-					"Ref": "AZForSubnet1"
-				},
-				"Tags": [
-					{
-						"Key": "Name",
-						"Value": {
-							"Fn::Join": [
-								"-",
-								[
-									{
-										"Ref": "AWS::StackName"
-									},
-									"HAMgmtSubnet1"
-								]
-							]
-						}
-					}
-				]
-			}
-		},
-		"PublicSub2": {
-			"Type": "AWS::EC2::Subnet",
-			"Properties": {
-				"VpcId": {
-					"Ref": "VPCID"
-				},
-				"CidrBlock": {
-					"Ref": "PublicSubnet2"
-				},
-				"AvailabilityZone": {
-					"Ref": "AZForSubnet2"
-				},
-				"Tags": [
-					{
-						"Key": "Name",
-						"Value": {
-							"Fn::Join": [
-								"-",
-								[
-									{
-										"Ref": "AWS::StackName"
-									},
-									"PublicSubnet2"
-								]
-							]
-						}
-					}
-				]
-			}
-		},
-		"PrivateSub2": {
-			"Type": "AWS::EC2::Subnet",
-			"Properties": {
-				"VpcId": {
-					"Ref": "VPCID"
-				},
-				"CidrBlock": {
-					"Ref": "PrivateSubnet2"
-				},
-				"AvailabilityZone": {
-					"Ref": "AZForSubnet2"
-				},
-				"Tags": [
-					{
-						"Key": "Name",
-						"Value": {
-							"Fn::Join": [
-								"-",
-								[
-									{
-										"Ref": "AWS::StackName"
-									},
-									"PrivateSubnet2"
-								]
-							]
-						}
-					}
-				]
-			}
-		},
-		"HASyncSub2": {
-			"Type": "AWS::EC2::Subnet",
-			"Properties": {
-				"VpcId": {
-					"Ref": "VPCID"
-				},
-				"CidrBlock": {
-					"Ref": "HASyncSubnet2"
-				},
-				"AvailabilityZone": {
-					"Ref": "AZForSubnet2"
-				},
-				"Tags": [
-					{
-						"Key": "Name",
-						"Value": {
-							"Fn::Join": [
-								"-",
-								[
-									{
-										"Ref": "AWS::StackName"
-									},
-									"HASyncSubnet2"
-								]
-							]
-						}
-					}
-				]
-			}
-		},
-		"HAMgmtSub2": {
-			"Type": "AWS::EC2::Subnet",
-			"Properties": {
-				"VpcId": {
-					"Ref": "VPCID"
-				},
-				"CidrBlock": {
-					"Ref": "HAMgmtSubnet2"
-				},
-				"AvailabilityZone": {
-					"Ref": "AZForSubnet2"
-				},
-				"Tags": [
-					{
-						"Key": "Name",
-						"Value": {
-							"Fn::Join": [
-								"-",
-								[
-									{
-										"Ref": "AWS::StackName"
-									},
-									"HAMgmtSubnet2"
-								]
-							]
-						}
-					}
-				]
-			}
-		},
-		"TgwAttachSub1": {
-			"Type": "AWS::EC2::Subnet",
-			"Condition": "CreateTgwAttachSubnets",
-			"Properties": {
-				"VpcId": {
-					"Ref": "VPCID"
-				},
-				"CidrBlock": {
-					"Ref": "TgwAttachSubnet1"
-				},
-				"AvailabilityZone": {
-					"Ref": "AZForSubnet1"
-				},
-				"Tags": [
-					{
-						"Key": "Name",
-						"Value": {
-							"Fn::Join": [
-								"-",
-								[
-									{
-										"Ref": "AWS::StackName"
-									},
-									"TgwAttachSubnet1"
-								]
-							]
-						}
-					}
-				]
-			}
-		},
-		"TgwAttachSub2": {
-			"Type": "AWS::EC2::Subnet",
-			"Condition": "CreateTgwAttachSubnets",
-			"Properties": {
-				"VpcId": {
-					"Ref": "VPCID"
-				},
-				"CidrBlock": {
-					"Ref": "TgwAttachSubnet2"
-				},
-				"AvailabilityZone": {
-					"Ref": "AZForSubnet2"
-				},
-				"Tags": [
-					{
-						"Key": "Name",
-						"Value": {
-							"Fn::Join": [
-								"-",
-								[
-									{
-										"Ref": "AWS::StackName"
-									},
-									"TgwAttachSubnet2"
-								]
-							]
-						}
-					}
-				]
-			}
-		},
-		"InternetGateway": {
-			"Type": "AWS::EC2::InternetGateway",
-			"Properties": {
-				"Tags": [
-					{
-						"Key": "Name",
-						"Value": {
-							"Fn::Join": [
-								"-",
-								[
-									{
-										"Ref": "AWS::StackName"
-									},
-									"IGW"
-								]
-							]
-						}
-					}
-				]
-			}
-		},
-		"AttachGateway": {
-			"Type": "AWS::EC2::VPCGatewayAttachment",
-			"Properties": {
-				"VpcId": {
-					"Ref": "VPCID"
-				},
-				"InternetGatewayId": {
-					"Ref": "InternetGateway"
-				}
-			}
-		},
-		"PublicRouteTable": {
-			"Type": "AWS::EC2::RouteTable",
-			"Properties": {
-				"VpcId": {
-					"Ref": "VPCID"
-				},
-				"Tags": [
-					{
-						"Key": "Name",
-						"Value": {
-							"Fn::Join": [
-								"-",
-								[
-									{
-										"Ref": "AWS::StackName"
-									},
-									"PublicRouteTable"
-								]
-							]
-						}
-					}
-				]
-			}
-		},
-		"PrivateRouteTable": {
-			"Type": "AWS::EC2::RouteTable",
-			"Properties": {
-				"VpcId": {
-					"Ref": "VPCID"
-				},
-				"Tags": [
-					{
-						"Key": "Name",
-						"Value": {
-							"Fn::Join": [
-								"-",
-								[
-									{
-										"Ref": "AWS::StackName"
-									},
-									"PrivateRouteTable"
-								]
-							]
-						}
-					}
-				]
-			}
-		},
-		"TgwAttachRouteTable": {
-			"Type": "AWS::EC2::RouteTable",
-			"Condition": "CreateTgwAttachSubnets",
-			"Properties": {
-				"VpcId": {
-					"Ref": "VPCID"
-				},
-				"Tags": [
-					{
-						"Key": "Name",
-						"Value": {
-							"Fn::Join": [
-								"-",
-								[
-									{
-										"Ref": "AWS::StackName"
-									},
-									"TgwAttachRouteTable"
-								]
-							]
-						}
-					}
-				]
-			}
-		},
-		"Route1": {
-			"Type": "AWS::EC2::Route",
-			"DependsOn": "AttachGateway",
-			"Properties": {
-				"RouteTableId": {
-					"Ref": "PublicRouteTable"
-				},
-				"DestinationCidrBlock": "0.0.0.0/0",
-				"GatewayId": {
-					"Ref": "InternetGateway"
-				}
-			}
-		},
-		"SubnetRouteTableAssociation1": {
-			"Type": "AWS::EC2::SubnetRouteTableAssociation",
-			"Properties": {
-				"SubnetId": {
-					"Ref": "PublicSub1"
-				},
-				"RouteTableId": {
-					"Ref": "PublicRouteTable"
-				}
-			}
-		},
-		"SubnetRouteTableAssociation2": {
-			"Type": "AWS::EC2::SubnetRouteTableAssociation",
-			"Properties": {
-				"SubnetId": {
-					"Ref": "PublicSub2"
-				},
-				"RouteTableId": {
-					"Ref": "PublicRouteTable"
-				}
-			}
-		},
-		"SubnetRouteTableAssociation3": {
-			"Type": "AWS::EC2::SubnetRouteTableAssociation",
-			"Properties": {
-				"SubnetId": {
-					"Ref": "HAMgmtSub1"
-				},
-				"RouteTableId": {
-					"Ref": "PublicRouteTable"
-				}
-			}
-		},
-		"SubnetRouteTableAssociation4": {
-			"Type": "AWS::EC2::SubnetRouteTableAssociation",
-			"Properties": {
-				"SubnetId": {
-					"Ref": "HAMgmtSub2"
-				},
-				"RouteTableId": {
-					"Ref": "PublicRouteTable"
-				}
-			}
-		},
-		"SubnetRouteTableAssociation5": {
-			"Type": "AWS::EC2::SubnetRouteTableAssociation",
-			"Properties": {
-				"SubnetId": {
-					"Ref": "PrivateSub1"
-				},
-				"RouteTableId": {
-					"Ref": "PrivateRouteTable"
-				}
-			}
-		},
-		"SubnetRouteTableAssociation6": {
-			"Type": "AWS::EC2::SubnetRouteTableAssociation",
-			"Properties": {
-				"SubnetId": {
-					"Ref": "PrivateSub2"
-				},
-				"RouteTableId": {
-					"Ref": "PrivateRouteTable"
-				}
-			}
-		},
-		"SubnetRouteTableAssociation7": {
-			"Type": "AWS::EC2::SubnetRouteTableAssociation",
-			"Properties": {
-				"SubnetId": {
-					"Ref": "HASyncSub1"
-				},
-				"RouteTableId": {
-					"Ref": "PrivateRouteTable"
-				}
-			}
-		},
-		"SubnetRouteTableAssociation8": {
-			"Type": "AWS::EC2::SubnetRouteTableAssociation",
-			"Properties": {
-				"SubnetId": {
-					"Ref": "HASyncSub2"
-				},
-				"RouteTableId": {
-					"Ref": "PrivateRouteTable"
-				}
-			}
-		},
-		"SubnetRouteTableAssociation9": {
-			"Type": "AWS::EC2::SubnetRouteTableAssociation",
-			"Condition": "CreateTgwAttachSubnets",
-			"Properties": {
-				"SubnetId": {
-					"Ref": "TgwAttachSub1"
-				},
-				"RouteTableId": {
-					"Ref": "TgwAttachRouteTable"
-				}
-			}
-		},
-		"SubnetRouteTableAssociation10": {
-			"Type": "AWS::EC2::SubnetRouteTableAssociation",
-			"Condition": "CreateTgwAttachSubnets",
-			"Properties": {
-				"SubnetId": {
-					"Ref": "TgwAttachSub2"
-				},
-				"RouteTableId": {
-					"Ref": "TgwAttachRouteTable"
-				}
-			}
-		},
-		"S3Endpoint": {
-			"Type": "AWS::EC2::VPCEndpoint",
-			"Properties": {
-				"PolicyDocument": {
-					"Version": "2012-10-17",
-					"Statement": [
-						{
-							"Effect": "Allow",
-							"Principal": "*",
-							"Action": [
-								"s3:GetObject"
-							],
-							"Resource": [
-								"*"
-							]
-						}
-					]
-				},
-				"RouteTableIds": [
-					{
-						"Ref": "PublicRouteTable"
-					}
-				],
-				"ServiceName": {
-					"Fn::Sub": "com.amazonaws.${AWS::Region}.s3"
-				},
-				"VpcId": {
-					"Ref": "VPCID"
-				}
-			}
-		}
-	}
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "(v5.3 - Grouped by AZ) AWS CFT to deploy a segmented VPC across 2 AZs for 3 FortiGate clusters and shared management.",
+    "Metadata": {
+        "AWS::CloudFormation::Interface": {
+            "ParameterGroups": [
+                {
+                    "Label": { "default": "VPC and AZ Configuration" },
+                    "Parameters": [ "VPCCIDR", "AZ1", "AZ2" ]
+                },
+                {
+                    "Label": { "default": "Subnet Configuration for AZ1" },
+                    "Parameters": [ 
+                        "MgmtSubnetAZ1", 
+                        "WANDmzeSubnetAZ1", "LANDmzeSubnetAZ1", "HADmzeSubnetAZ1",
+                        "WANSdwanSubnetAZ1", "LANSdwanSubnetAZ1", "HASdwanSubnetAZ1",
+                        "WANDmziSubnetAZ1", "LANDmziSubnetAZ1", "HADmziSubnetAZ1"
+                    ]
+                },
+                {
+                    "Label": { "default": "Subnet Configuration for AZ2" },
+                    "Parameters": [ 
+                        "MgmtSubnetAZ2",
+                        "WANDmzeSubnetAZ2", "LANDmzeSubnetAZ2", "HADmzeSubnetAZ2",
+                        "WANSdwanSubnetAZ2", "LANSdwanSubnetAZ2", "HASdwanSubnetAZ2",
+                        "WANDmziSubnetAZ2", "LANDmziSubnetAZ2", "HADmziSubnetAZ2"
+                     ]
+                }
+            ]
+        }
+    },
+    "Parameters": {
+        "VPCCIDR": { "Type": "String", "Default": "10.4.0.0/22" },
+        "AZ1": { "Type": "AWS::EC2::AvailabilityZone::Name", "Description": "Select the first Availability Zone." },
+        "AZ2": { "Type": "AWS::EC2::AvailabilityZone::Name", "Description": "Select the second Availability Zone." },
+        "MgmtSubnetAZ1": { "Type": "String", "Default": "10.4.0.64/28" },
+        "WANDmzeSubnetAZ1": { "Type": "String", "Default": "10.4.0.96/27" },
+        "LANDmzeSubnetAZ1": { "Type": "String", "Default": "10.4.0.80/28" },
+        "HADmzeSubnetAZ1": { "Type": "String", "Default": "10.4.0.128/28" },
+        "WANSdwanSubnetAZ1": { "Type": "String", "Default": "10.4.0.0/27" },
+        "LANSdwanSubnetAZ1": { "Type": "String", "Default": "10.4.0.32/28" },
+        "HASdwanSubnetAZ1": { "Type": "String", "Default": "10.4.0.48/28" },
+        "WANDmziSubnetAZ1": { "Type": "String", "Default": "10.4.0.160/28" },
+        "LANDmziSubnetAZ1": { "Type": "String", "Default": "10.4.0.144/28" },
+        "HADmziSubnetAZ1": { "Type": "String", "Default": "10.4.0.176/28" },
+        "MgmtSubnetAZ2": { "Type": "String", "Default": "10.4.1.0/28" },
+        "WANDmzeSubnetAZ2": { "Type": "String", "Default": "10.4.1.32/27" },
+        "LANDmzeSubnetAZ2": { "Type": "String", "Default": "10.4.1.16/28" },
+        "HADmzeSubnetAZ2": { "Type": "String", "Default": "10.4.1.64/28" },
+        "WANSdwanSubnetAZ2": { "Type": "String", "Default": "10.4.0.192/27" },
+        "LANSdwanSubnetAZ2": { "Type": "String", "Default": "10.4.0.224/28" },
+        "HASdwanSubnetAZ2": { "Type": "String", "Default": "10.4.0.240/28" },
+        "WANDmziSubnetAZ2": { "Type": "String", "Default": "10.4.1.96/28" },
+        "LANDmziSubnetAZ2": { "Type": "String", "Default": "10.4.1.80/28" },
+        "HADmziSubnetAZ2": { "Type": "String", "Default": "10.4.1.112/28" }
+    },
+    "Resources": {
+        "VPC": { "Type": "AWS::EC2::VPC", "Properties": { "CidrBlock": { "Ref": "VPCCIDR" }, "EnableDnsSupport": "true", "EnableDnsHostnames": "true", "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-VPC" } } ] } },
+        "InternetGateway": { "Type": "AWS::EC2::InternetGateway", "Properties": { "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-IGW" } } ] } },
+        "AttachGateway": { "Type": "AWS::EC2::VPCGatewayAttachment", "Properties": { "VpcId": { "Ref": "VPC" }, "InternetGatewayId": { "Ref": "InternetGateway" } } },
+        "MgmtRouteTableAZ1": { "Type": "AWS::EC2::RouteTable", "Properties": { "VpcId": { "Ref": "VPC" }, "Tags": [ { "Key": "Name", "Value": "MGMT-RT-AZ1" } ] } },
+        "DefaultMgmtRouteAZ1": { "Type": "AWS::EC2::Route", "DependsOn": "AttachGateway", "Properties": { "RouteTableId": { "Ref": "MgmtRouteTableAZ1" }, "DestinationCidrBlock": "0.0.0.0/0", "GatewayId": { "Ref": "InternetGateway" } } },
+        "MgmtRouteTableAZ2": { "Type": "AWS::EC2::RouteTable", "Properties": { "VpcId": { "Ref": "VPC" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-MGMT-RT-AZ2" } } ] } },
+        "DefaultMgmtRouteAZ2": { "Type": "AWS::EC2::Route", "DependsOn": "AttachGateway", "Properties": { "RouteTableId": { "Ref": "MgmtRouteTableAZ2" }, "DestinationCidrBlock": "0.0.0.0/0", "GatewayId": { "Ref": "InternetGateway" } } },
+        "PublicRouteTableAZ1": { "Type": "AWS::EC2::RouteTable", "Properties": { "VpcId": { "Ref": "VPC" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-Public-RT-AZ1" } } ] } },
+        "DefaultPublicRouteAZ1": { "Type": "AWS::EC2::Route", "DependsOn": "AttachGateway", "Properties": { "RouteTableId": { "Ref": "PublicRouteTableAZ1" }, "DestinationCidrBlock": "0.0.0.0/0", "GatewayId": { "Ref": "InternetGateway" } } },
+        "PublicRouteTableAZ2": { "Type": "AWS::EC2::RouteTable", "Properties": { "VpcId": { "Ref": "VPC" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-Public-RT-AZ2" } } ] } },
+        "DefaultPublicRouteAZ2": { "Type": "AWS::EC2::Route", "DependsOn": "AttachGateway", "Properties": { "RouteTableId": { "Ref": "PublicRouteTableAZ2" }, "DestinationCidrBlock": "0.0.0.0/0", "GatewayId": { "Ref": "InternetGateway" } } },
+        "PrivateRouteTableAZ1": { "Type": "AWS::EC2::RouteTable", "Properties": { "VpcId": { "Ref": "VPC" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-Private-RT-AZ1" } } ] } },
+        "PrivateRouteTableAZ2": { "Type": "AWS::EC2::RouteTable", "Properties": { "VpcId": { "Ref": "VPC" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-Private-RT-AZ2" } } ] } },
+        "HARouteTableAZ1": { "Type": "AWS::EC2::RouteTable", "Properties": { "VpcId": { "Ref": "VPC" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-HA-RT-AZ1" } } ] } },
+        "HARouteTableAZ2": { "Type": "AWS::EC2::RouteTable", "Properties": { "VpcId": { "Ref": "VPC" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-HA-RT-AZ2" } } ] } },
+        "S3Endpoint": { "Type": "AWS::EC2::VPCEndpoint", "Properties": { "VpcId": { "Ref": "VPC" }, "ServiceName": { "Fn::Sub": "com.amazonaws.${AWS::Region}.s3" }, "RouteTableIds": [ { "Ref": "MgmtRouteTableAZ1" }, { "Ref": "MgmtRouteTableAZ2" }, { "Ref": "PublicRouteTableAZ1" }, { "Ref": "PublicRouteTableAZ2" }, { "Ref": "PrivateRouteTableAZ1" }, { "Ref": "PrivateRouteTableAZ2" } ] } },
+        "SubnetMgmtAZ1": { "Type": "AWS::EC2::Subnet", "Properties": { "VpcId": { "Ref": "VPC" }, "CidrBlock": { "Ref": "MgmtSubnetAZ1" }, "AvailabilityZone": { "Ref": "AZ1" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-MGMT-AZ1" } } ] } },
+        "SubnetMgmtAZ2": { "Type": "AWS::EC2::Subnet", "Properties": { "VpcId": { "Ref": "VPC" }, "CidrBlock": { "Ref": "MgmtSubnetAZ2" }, "AvailabilityZone": { "Ref": "AZ2" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-MGMT-AZ2" } } ] } },
+        "SubnetWANDmzeAZ1": { "Type": "AWS::EC2::Subnet", "Properties": { "VpcId": { "Ref": "VPC" }, "CidrBlock": { "Ref": "WANDmzeSubnetAZ1" }, "AvailabilityZone": { "Ref": "AZ1" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-WAN-DMZe-AZ1" } } ] } },
+        "SubnetWANDmzeAZ2": { "Type": "AWS::EC2::Subnet", "Properties": { "VpcId": { "Ref": "VPC" }, "CidrBlock": { "Ref": "WANDmzeSubnetAZ2" }, "AvailabilityZone": { "Ref": "AZ2" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-WAN-DMZe-AZ2" } } ] } },
+        "SubnetLANDmzeAZ1": { "Type": "AWS::EC2::Subnet", "Properties": { "VpcId": { "Ref": "VPC" }, "CidrBlock": { "Ref": "LANDmzeSubnetAZ1" }, "AvailabilityZone": { "Ref": "AZ1" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-LAN-DMZe-AZ1" } } ] } },
+        "SubnetLANDmzeAZ2": { "Type": "AWS::EC2::Subnet", "Properties": { "VpcId": { "Ref": "VPC" }, "CidrBlock": { "Ref": "LANDmzeSubnetAZ2" }, "AvailabilityZone": { "Ref": "AZ2" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-LAN-DMZe-AZ2" } } ] } },
+        "SubnetHADmzeAZ1": { "Type": "AWS::EC2::Subnet", "Properties": { "VpcId": { "Ref": "VPC" }, "CidrBlock": { "Ref": "HADmzeSubnetAZ1" }, "AvailabilityZone": { "Ref": "AZ1" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-HA-DMZe-AZ1" } } ] } },
+        "SubnetHADmzeAZ2": { "Type": "AWS::EC2::Subnet", "Properties": { "VpcId": { "Ref": "VPC" }, "CidrBlock": { "Ref": "HADmzeSubnetAZ2" }, "AvailabilityZone": { "Ref": "AZ2" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-HA-DMZe-AZ2" } } ] } },
+        "SubnetWANSdwanAZ1": { "Type": "AWS::EC2::Subnet", "Properties": { "VpcId": { "Ref": "VPC" }, "CidrBlock": { "Ref": "WANSdwanSubnetAZ1" }, "AvailabilityZone": { "Ref": "AZ1" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-WAN-SDWAN-AZ1" } } ] } },
+        "SubnetWANSdwanAZ2": { "Type": "AWS::EC2::Subnet", "Properties": { "VpcId": { "Ref": "VPC" }, "CidrBlock": { "Ref": "WANSdwanSubnetAZ2" }, "AvailabilityZone": { "Ref": "AZ2" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-WAN-SDWAN-AZ2" } } ] } },
+        "SubnetLANSdwanAZ1": { "Type": "AWS::EC2::Subnet", "Properties": { "VpcId": { "Ref": "VPC" }, "CidrBlock": { "Ref": "LANSdwanSubnetAZ1" }, "AvailabilityZone": { "Ref": "AZ1" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-LAN-SDWAN-AZ1" } } ] } },
+        "SubnetLANSdwanAZ2": { "Type": "AWS::EC2::Subnet", "Properties": { "VpcId": { "Ref": "VPC" }, "CidrBlock": { "Ref": "LANSdwanSubnetAZ2" }, "AvailabilityZone": { "Ref": "AZ2" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-LAN-SDWAN-AZ2" } } ] } },
+        "SubnetHASdwanAZ1": { "Type": "AWS::EC2::Subnet", "Properties": { "VpcId": { "Ref": "VPC" }, "CidrBlock": { "Ref": "HASdwanSubnetAZ1" }, "AvailabilityZone": { "Ref": "AZ1" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-HA-SDWAN-AZ1" } } ] } },
+        "SubnetHASdwanAZ2": { "Type": "AWS::EC2::Subnet", "Properties": { "VpcId": { "Ref": "VPC" }, "CidrBlock": { "Ref": "HASdwanSubnetAZ2" }, "AvailabilityZone": { "Ref": "AZ2" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-HA-SDWAN-AZ2" } } ] } },
+        "SubnetWANDmziAZ1": { "Type": "AWS::EC2::Subnet", "Properties": { "VpcId": { "Ref": "VPC" }, "CidrBlock": { "Ref": "WANDmziSubnetAZ1" }, "AvailabilityZone": { "Ref": "AZ1" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-WAN-DMZi-AZ1" } } ] } },
+        "SubnetWANDmziAZ2": { "Type": "AWS::EC2::Subnet", "Properties": { "VpcId": { "Ref": "VPC" }, "CidrBlock": { "Ref": "WANDmziSubnetAZ2" }, "AvailabilityZone": { "Ref": "AZ2" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-WAN-DMZi-AZ2" } } ] } },
+        "SubnetLANDmziAZ1": { "Type": "AWS::EC2::Subnet", "Properties": { "VpcId": { "Ref": "VPC" }, "CidrBlock": { "Ref": "LANDmziSubnetAZ1" }, "AvailabilityZone": { "Ref": "AZ1" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-LAN-DMZi-AZ1" } } ] } },
+        "SubnetLANDmziAZ2": { "Type": "AWS::EC2::Subnet", "Properties": { "VpcId": { "Ref": "VPC" }, "CidrBlock": { "Ref": "LANDmziSubnetAZ2" }, "AvailabilityZone": { "Ref": "AZ2" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-LAN-DMZi-AZ2" } } ] } },
+        "SubnetHADmziAZ1": { "Type": "AWS::EC2::Subnet", "Properties": { "VpcId": { "Ref": "VPC" }, "CidrBlock": { "Ref": "HADmziSubnetAZ1" }, "AvailabilityZone": { "Ref": "AZ1" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-HA-DMZi-AZ1" } } ] } },
+        "SubnetHADmziAZ2": { "Type": "AWS::EC2::Subnet", "Properties": { "VpcId": { "Ref": "VPC" }, "CidrBlock": { "Ref": "HADmziSubnetAZ2" }, "AvailabilityZone": { "Ref": "AZ2" }, "Tags": [ { "Key": "Name", "Value": { "Fn::Sub": "${AWS::StackName}-HA-DMZi-AZ2" } } ] } },
+        "AssocMgmtAZ1": { "Type": "AWS::EC2::SubnetRouteTableAssociation", "Properties": { "SubnetId": { "Ref": "SubnetMgmtAZ1" }, "RouteTableId": { "Ref": "MgmtRouteTableAZ1" } } },
+        "AssocMgmtAZ2": { "Type": "AWS::EC2::SubnetRouteTableAssociation", "Properties": { "SubnetId": { "Ref": "SubnetMgmtAZ2" }, "RouteTableId": { "Ref": "MgmtRouteTableAZ2" } } },
+        "AssocWANDmzeAZ1": { "Type": "AWS::EC2::SubnetRouteTableAssociation", "Properties": { "SubnetId": { "Ref": "SubnetWANDmzeAZ1" }, "RouteTableId": { "Ref": "PublicRouteTableAZ1" } } },
+        "AssocWANDmzeAZ2": { "Type": "AWS::EC2::SubnetRouteTableAssociation", "Properties": { "SubnetId": { "Ref": "SubnetWANDmzeAZ2" }, "RouteTableId": { "Ref": "PublicRouteTableAZ2" } } },
+        "AssocWANSdwanAZ1": { "Type": "AWS::EC2::SubnetRouteTableAssociation", "Properties": { "SubnetId": { "Ref": "SubnetWANSdwanAZ1" }, "RouteTableId": { "Ref": "PublicRouteTableAZ1" } } },
+        "AssocWANSdwanAZ2": { "Type": "AWS::EC2::SubnetRouteTableAssociation", "Properties": { "SubnetId": { "Ref": "SubnetWANSdwanAZ2" }, "RouteTableId": { "Ref": "PublicRouteTableAZ2" } } },
+        "AssocWANDmziAZ1": { "Type": "AWS::EC2::SubnetRouteTableAssociation", "Properties": { "SubnetId": { "Ref": "SubnetWANDmziAZ1" }, "RouteTableId": { "Ref": "PublicRouteTableAZ1" } } },
+        "AssocWANDmziAZ2": { "Type": "AWS::EC2::SubnetRouteTableAssociation", "Properties": { "SubnetId": { "Ref": "SubnetWANDmziAZ2" }, "RouteTableId": { "Ref": "PublicRouteTableAZ2" } } },
+        "AssocLANDmzeAZ1": { "Type": "AWS::EC2::SubnetRouteTableAssociation", "Properties": { "SubnetId": { "Ref": "SubnetLANDmzeAZ1" }, "RouteTableId": { "Ref": "PrivateRouteTableAZ1" } } },
+        "AssocLANDmzeAZ2": { "Type": "AWS::EC2::SubnetRouteTableAssociation", "Properties": { "SubnetId": { "Ref": "SubnetLANDmzeAZ2" }, "RouteTableId": { "Ref": "PrivateRouteTableAZ2" } } },
+        "AssocLANSdwanAZ1": { "Type": "AWS::EC2::SubnetRouteTableAssociation", "Properties": { "SubnetId": { "Ref": "SubnetLANSdwanAZ1" }, "RouteTableId": { "Ref": "PrivateRouteTableAZ1" } } },
+        "AssocLANSdwanAZ2": { "Type": "AWS::EC2::SubnetRouteTableAssociation", "Properties": { "SubnetId": { "Ref": "SubnetLANSdwanAZ2" }, "RouteTableId": { "Ref": "PrivateRouteTableAZ2" } } },
+        "AssocLANDmziAZ1": { "Type": "AWS::EC2::SubnetRouteTableAssociation", "Properties": { "SubnetId": { "Ref": "SubnetLANDmziAZ1" }, "RouteTableId": { "Ref": "PrivateRouteTableAZ1" } } },
+        "AssocLANDmziAZ2": { "Type": "AWS::EC2::SubnetRouteTableAssociation", "Properties": { "SubnetId": { "Ref": "SubnetLANDmziAZ2" }, "RouteTableId": { "Ref": "PrivateRouteTableAZ2" } } },
+        "AssocHADmzeAZ1": { "Type": "AWS::EC2::SubnetRouteTableAssociation", "Properties": { "SubnetId": { "Ref": "SubnetHADmzeAZ1" }, "RouteTableId": { "Ref": "HARouteTableAZ1" } } },
+        "AssocHADmzeAZ2": { "Type": "AWS::EC2::SubnetRouteTableAssociation", "Properties": { "SubnetId": { "Ref": "SubnetHADmzeAZ2" }, "RouteTableId": { "Ref": "HARouteTableAZ2" } } },
+        "AssocHASdwanAZ1": { "Type": "AWS::EC2::SubnetRouteTableAssociation", "Properties": { "SubnetId": { "Ref": "SubnetHASdwanAZ1" }, "RouteTableId": { "Ref": "HARouteTableAZ1" } } },
+        "AssocHASdwanAZ2": { "Type": "AWS::EC2::SubnetRouteTableAssociation", "Properties": { "SubnetId": { "Ref": "SubnetHASdwanAZ2" }, "RouteTableId": { "Ref": "HARouteTableAZ2" } } },
+        "AssocHADmziAZ1": { "Type": "AWS::EC2::SubnetRouteTableAssociation", "Properties": { "SubnetId": { "Ref": "SubnetHADmziAZ1" }, "RouteTableId": { "Ref": "HARouteTableAZ1" } } },
+        "AssocHADmziAZ2": { "Type": "AWS::EC2::SubnetRouteTableAssociation", "Properties": { "SubnetId": { "Ref": "SubnetHADmziAZ2" }, "RouteTableId": { "Ref": "HARouteTableAZ2" } } }
+    },
+    "Outputs": {
+        "VPCId": { "Description": "ID of the created VPC", "Value": { "Ref": "VPC" } }
+    }
 }
